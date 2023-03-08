@@ -47,18 +47,18 @@ using [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli). You c
 - Apple M1 Max
 
 ```
-$ hyperfine --warmup 5 './node_modules/.bin/mmdc -i test.mmd -o test.png' './target/release/mermaid-cli-rs -i test.mmd -o test.png'
+$ hyperfine --warmup 5 './node_modules/.bin/mmdc -i test.mmd -o test.png' './target/release/mmdc -i test.mmd -o test.png'
 Benchmark 1: ./node_modules/.bin/mmdc -i test.mmd -o test.png
-  Time (mean ± σ):      1.456 s ±  0.031 s    [User: 0.410 s, System: 0.164 s]
-  Range (min … max):    1.396 s …  1.514 s    10 runs
+  Time (mean ± σ):      1.517 s ±  0.044 s    [User: 0.409 s, System: 0.163 s]
+  Range (min … max):    1.477 s …  1.620 s    10 runs
  
-Benchmark 2: ./target/release/mermaid-cli-rs -i test.mmd -o test.png
-  Time (mean ± σ):      3.857 s ±  0.133 s    [User: 0.182 s, System: 0.101 s]
-  Range (min … max):    3.602 s …  4.057 s    10 runs
+Benchmark 2: ./target/release/mmdc -i test.mmd -o test.png
+  Time (mean ± σ):      3.960 s ±  0.126 s    [User: 0.206 s, System: 0.114 s]
+  Range (min … max):    3.737 s …  4.118 s    10 runs
  
 Summary
   './node_modules/.bin/mmdc -i test.mmd -o test.png' ran
-    2.65 ± 0.11 times faster than './target/release/mermaid-cli-rs -i test.mmd -o test.png'
+    2.61 ± 0.11 times faster than './target/release/mmdc -i test.mmd -o test.png'
 ```
 
 ## Licenses
