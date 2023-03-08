@@ -1,0 +1,7 @@
+/target
+*.mmd
+*.svg
+*.png
+/assets/mermaid*
+/assets/SourceHanSansJP*
+/samples

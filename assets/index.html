@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="preload" href="/font" as="font" type="font/woff">
+    <script src="/mermaid_js"></script>
+    <link rel="stylesheet" href="/style">
+</head>
+<body>
+<div id="mermaid"></div>
+<script>
+    window.onload = async () => {
+        let {initialize, mermaidAPI: {render}} = mermaid;
+        const config = await (await fetch("/config")).json();
+        initialize(config);
+        const data = await (await fetch("/diagram")).text();
+        await render("svg", data, (svg) => document.getElementById("mermaid").innerHTML = svg);
+    };
+</script>
+</body>
+</html>
