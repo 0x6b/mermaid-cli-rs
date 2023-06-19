@@ -1,38 +1,37 @@
 use std::sync::{Arc, RwLock};
 
 use camino::Utf8PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-/// Command-line arguments for the `mermaid-cli-rs`.
-#[derive(StructOpt)]
-#[structopt(name = "mermaid-cli-rs", about = "Convert Mermaid diagram to PNG or SVG format.")]
+#[derive(Parser, Debug)]
+#[clap(about, version)]
 pub(crate) struct Args {
     /// Path to the Mermaid diagram file. Specify `-` for stdin.
-    #[structopt(short = "i", long = "input")]
+    #[arg(short = 'i', long = "input")]
     pub(crate) diagram: String,
 
     /// Path to the output file. By default, the file format is PNG. Specify a `.svg` extension if you need an SVG file.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub(crate) output: String,
 
     /// Width of the output image in pixels.
-    #[structopt(short, long, default_value = "1960")]
+    #[arg(short, long, default_value = "1960")]
     pub(crate) width: u32,
 
     /// Height of the output image in pixels. This value is automatically reduced to fit the image.
-    #[structopt(short, long, default_value = "2160")]
+    #[arg(short = 'H', long, default_value = "2160")]
     pub(crate) height: u32,
 
     /// Path to a CSS file for the HTML page.
-    #[structopt(short = "c", long = "cssFile")]
+    #[arg(short = 'c', long = "cssFile")]
     pub(crate) style: Option<String>,
 
     /// Path to a JSON configuration file for Mermaid.
-    #[structopt(short = "C", long = "configFile")]
+    #[arg(short = 'C', long = "configFile")]
     pub(crate) config: Option<String>,
 
     /// Path to a font file for Mermaid.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub(crate) font: Option<String>,
 }
 
