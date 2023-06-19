@@ -17,9 +17,9 @@ use axum::{
     Router, Server,
 };
 use camino::Utf8PathBuf;
+use clap::Parser;
 use headless_chrome::{protocol::cdp::Page::CaptureScreenshotFormatOption::Png, Browser, LaunchOptionsBuilder};
 use mime::{APPLICATION_JSON, FONT_WOFF, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8};
-use structopt::StructOpt;
 
 use crate::{
     macros::response,
@@ -50,7 +50,7 @@ async fn main() {
         width,
         height,
         output,
-    } = Args::from_args();
+    } = Args::parse();
 
     // A shared storage for resources used to serve.
     let shared_store = Arc::new(RwLock::new(Store {
