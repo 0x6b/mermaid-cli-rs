@@ -38,7 +38,7 @@ Options:
 If you require better performance or more advanced capabilities, we recommend
 using [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli). You can review a rough, not scientific, benchmark I conducted with the diagram example available at [mermaid-js/mermaid/demos/flowchart.html](https://github.com/mermaid-js/mermaid/blob/4e4f2fcfc5367f22edea685b8f48ad2d7525d1c0/demos/flowchart.html).
 
-- Node.js vv18.18.0
+- Node.js v18.18.0
 - Rust 1.73.0 (cc66ad468 2023-10-03)
 - macOS 14.0 (Sonoma)
 - Apple M1 Max
