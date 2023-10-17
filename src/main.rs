@@ -109,14 +109,16 @@ async fn main() {
 ///
 /// # Arguments
 ///
-/// * `output` - The path to the output file. The file format will be determined by the file extension (e.g., `.png` for a PNG image, `.svg` for an SVG image).
+/// * `output` - The path to the output file. The file format will be determined by the file extension (e.g., `.png` for
+///   a PNG image, `.svg` for an SVG image).
 /// * `width` - The width of the generated image.
 /// * `height` - The height of the generated image.
 /// * `port` - The port number to use for the local server serving the Mermaid diagram.
 ///
 /// # Returns
 ///
-/// A string representation of the path to the output file if the export was successful, or an error if the export failed.
+/// A string representation of the path to the output file if the export was successful, or an error if the export
+/// failed.
 fn export_mermaid_to_image(output: &str, width: u32, height: u32, port: u16) -> Result<String, Box<dyn Error>> {
     let path = Utf8PathBuf::from(output);
     let image = convert_mermaid_to_image(width, height, ImageFormat::from(&path), port)?;
@@ -135,7 +137,8 @@ fn export_mermaid_to_image(output: &str, width: u32, height: u32, port: u16) -> 
 ///
 /// # Returns
 ///
-/// A `Result` containing `Vec<u8>` representing the generated image if the export was successful, or an error if the export failed.
+/// A `Result` containing `Vec<u8>` representing the generated image if the export was successful, or an error if the
+/// export failed.
 fn convert_mermaid_to_image(
     width: u32,
     height: u32,
@@ -177,7 +180,8 @@ fn convert_mermaid_to_image(
 ///
 /// # Returns
 ///
-/// A vector of bytes representing the contents of the file at the given path, or the default value if the path is `None` or the file cannot be read.
+/// A vector of bytes representing the contents of the file at the given path, or the default value if the path is
+/// `None` or the file cannot be read.
 fn from_file_or_default(path: &Option<String>, default: &[u8]) -> Vec<u8> {
     path.as_ref().map_or_else(
         || default.to_vec(),
