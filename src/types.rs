@@ -10,7 +10,8 @@ pub(crate) struct Args {
     #[arg(short = 'i', long = "input")]
     pub(crate) diagram: String,
 
-    /// Path to the output file. By default, the file format is PNG. Specify a `.svg` extension if you need an SVG file.
+    /// Path to the output file. By default, the file format is PNG. Specify a `.svg` extension if you need an SVG
+    /// file.
     #[arg(short, long)]
     pub(crate) output: String,
 
