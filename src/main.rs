@@ -18,8 +18,12 @@ use axum::{
 };
 use camino::Utf8PathBuf;
 use clap::Parser;
-use headless_chrome::{protocol::cdp::Page::CaptureScreenshotFormatOption::Png, Browser, LaunchOptionsBuilder};
-use mime::{APPLICATION_JSON, FONT_WOFF, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8};
+use headless_chrome::{
+    protocol::cdp::Page::CaptureScreenshotFormatOption::Png, Browser, LaunchOptionsBuilder,
+};
+use mime::{
+    APPLICATION_JSON, FONT_WOFF, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8,
+};
 
 use crate::{
     macros::response,
@@ -64,7 +68,8 @@ async fn main() {
                 handle.read_to_string(&mut input).unwrap();
                 input.into_bytes()
             } else {
-                fs::read(&diagram).unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
+                fs::read(&diagram)
+                    .unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
             }
         },
         mermaid_js: MERMAID_JS.to_vec(),
@@ -75,21 +80,19 @@ async fn main() {
         .route("/", get(|| async { response!(TEXT_HTML, HTML) }))
         .route(
             "/:path",
-            get(
-                |Path(path): Path<String>, State(state): State<SharedState>| async move {
-                    match state.read() {
-                        Ok(store) => match path.as_ref() {
-                            "font" => response!(FONT_WOFF, store.font),
-                            "style" => response!(TEXT_CSS_UTF_8, store.style),
-                            "config" => response!(APPLICATION_JSON, store.config),
-                            "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
-                            "mermaid_js" => response!(TEXT_JAVASCRIPT, store.mermaid_js),
-                            _ => StatusCode::NOT_FOUND.into_response(),
-                        },
-                        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-                    }
-                },
-            ),
+            get(|Path(path): Path<String>, State(state): State<SharedState>| async move {
+                match state.read() {
+                    Ok(store) => match path.as_ref() {
+                        "font" => response!(FONT_WOFF, store.font),
+                        "style" => response!(TEXT_CSS_UTF_8, store.style),
+                        "config" => response!(APPLICATION_JSON, store.config),
+                        "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
+                        "mermaid_js" => response!(TEXT_JAVASCRIPT, store.mermaid_js),
+                        _ => StatusCode::NOT_FOUND.into_response(),
+                    },
+                    Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                }
+            }),
         )
         .with_state(Arc::clone(&shared_store));
 
@@ -109,17 +112,22 @@ async fn main() {
 ///
 /// # Arguments
 ///
-/// * `output` - The path to the output file. The file format will be determined by the file extension (e.g., `.png` for
-///   a PNG image, `.svg` for an SVG image).
+/// * `output` - The path to the output file. The file format will be determined by the file
+///   extension (e.g., `.png` for a PNG image, `.svg` for an SVG image).
 /// * `width` - The width of the generated image.
 /// * `height` - The height of the generated image.
 /// * `port` - The port number to use for the local server serving the Mermaid diagram.
 ///
 /// # Returns
 ///
-/// A string representation of the path to the output file if the export was successful, or an error if the export
-/// failed.
-fn export_mermaid_to_image(output: &str, width: u32, height: u32, port: u16) -> Result<String, Box<dyn Error>> {
+/// A string representation of the path to the output file if the export was successful, or an error
+/// if the export failed.
+fn export_mermaid_to_image(
+    output: &str,
+    width: u32,
+    height: u32,
+    port: u16,
+) -> Result<String, Box<dyn Error>> {
     let path = Utf8PathBuf::from(output);
     let image = convert_mermaid_to_image(width, height, ImageFormat::from(&path), port)?;
     fs::write(&path, image)?;
@@ -137,8 +145,8 @@ fn export_mermaid_to_image(output: &str, width: u32, height: u32, port: u16) -> 
 ///
 /// # Returns
 ///
-/// A `Result` containing `Vec<u8>` representing the generated image if the export was successful, or an error if the
-/// export failed.
+/// A `Result` containing `Vec<u8>` representing the generated image if the export was successful,
+/// or an error if the export failed.
 fn convert_mermaid_to_image(
     width: u32,
     height: u32,
@@ -167,21 +175,25 @@ fn convert_mermaid_to_image(
                 .replace(r#"\""#, r#"""#); // `this.innerHTML` returns double quoted string
             str[1..(str.len() - 1)].as_bytes().to_vec() // omit first and last "
         }
-        ImageFormat::Png => tab.wait_for_element("div#mermaid > svg#svg")?.capture_screenshot(Png)?,
+        ImageFormat::Png => tab
+            .wait_for_element("div#mermaid > svg#svg")?
+            .capture_screenshot(Png)?,
     })
 }
 
-/// Read a file from the given path or return a default value if the path is `None` or the file cannot be read.
+/// Read a file from the given path or return a default value if the path is `None` or the file
+/// cannot be read.
 ///
 /// # Arguments
 ///
 /// * `path` - An optional string representing the path to a file to read.
-/// * `default` - A byte slice representing the default value to return if `path` is `None` or the file cannot be read.
+/// * `default` - A byte slice representing the default value to return if `path` is `None` or the
+///   file cannot be read.
 ///
 /// # Returns
 ///
-/// A vector of bytes representing the contents of the file at the given path, or the default value if the path is
-/// `None` or the file cannot be read.
+/// A vector of bytes representing the contents of the file at the given path, or the default value
+/// if the path is `None` or the file cannot be read.
 fn from_file_or_default(path: &Option<String>, default: &[u8]) -> Vec<u8> {
     path.as_ref().map_or_else(
         || default.to_vec(),

@@ -27,10 +27,7 @@
 macro_rules! response {
     ($a:expr, $b:expr) => {
         // Create a tuple containing the content type header and the body of the response.
-        (
-            [(header::CONTENT_TYPE, HeaderValue::from_static($a.as_ref()))],
-            $b.clone(),
-        )
+        ([(header::CONTENT_TYPE, HeaderValue::from_static($a.as_ref()))], $b.clone())
             // Convert the tuple into a `Response` struct.
             .into_response()
     };
