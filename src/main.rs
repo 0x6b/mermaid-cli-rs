@@ -3,8 +3,8 @@
 //! Convert Mermaid diagram to PNG or SVG format, without external network access.
 use std::{
     error::Error,
-    fs, io,
-    io::Read,
+    fs::{read, write},
+    io::{stdin, Read},
     net::SocketAddr,
     sync::{Arc, RwLock},
 };
@@ -14,7 +14,7 @@ use axum::{
     http::{header, HeaderValue, StatusCode},
     response::IntoResponse,
     routing::get,
-    Router, Server,
+    serve, Router,
 };
 use camino::Utf8PathBuf;
 use clap::Parser;
@@ -24,6 +24,7 @@ use headless_chrome::{
 use mime::{
     APPLICATION_JSON, FONT_WOFF, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8,
 };
+use tokio::{net::TcpListener, spawn};
 
 use crate::{
     macros::response,
@@ -45,7 +46,7 @@ const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@9.4.0.min.js");
 
 #[tokio::main(worker_threads = 2)]
-async fn main() {
+async fn main() -> Result<(), Box<dyn Error>> {
     let Args {
         font,
         style,
@@ -64,12 +65,11 @@ async fn main() {
         diagram: {
             if &diagram == "-" {
                 let mut input = String::new();
-                let mut handle = io::stdin().lock();
-                handle.read_to_string(&mut input).unwrap();
+                let mut handle = stdin().lock();
+                handle.read_to_string(&mut input)?;
                 input.into_bytes()
             } else {
-                fs::read(&diagram)
-                    .unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
+                read(&diagram).unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
             }
         },
         mermaid_js: MERMAID_JS.to_vec(),
@@ -98,14 +98,18 @@ async fn main() {
 
     // Bind the HTTP server to a local address.
     let addr = SocketAddr::from(([127, 0, 0, 1], 0));
-    let server = Server::bind(&addr).serve(app.into_make_service());
-    let port = server.local_addr().port();
-    tokio::spawn(server);
+    let listener = TcpListener::bind(&addr).await?;
+    let port = listener.local_addr()?.port();
+    spawn(async {
+        serve(listener, app.into_make_service()).await.unwrap();
+    });
 
     match export_mermaid_to_image(&output, width, height, port) {
         Ok(path) => println!("{path}"),
         Err(why) => panic!("{why}"),
     }
+
+    Ok(())
 }
 
 /// Export a Mermaid diagram to a file specified by the `output` argument.
@@ -130,7 +134,7 @@ fn export_mermaid_to_image(
 ) -> Result<String, Box<dyn Error>> {
     let path = Utf8PathBuf::from(output);
     let image = convert_mermaid_to_image(width, height, ImageFormat::from(&path), port)?;
-    fs::write(&path, image)?;
+    write(&path, image)?;
     Ok(path.canonicalize()?.to_string_lossy().to_string())
 }
 
@@ -195,8 +199,6 @@ fn convert_mermaid_to_image(
 /// A vector of bytes representing the contents of the file at the given path, or the default value
 /// if the path is `None` or the file cannot be read.
 fn from_file_or_default(path: &Option<String>, default: &[u8]) -> Vec<u8> {
-    path.as_ref().map_or_else(
-        || default.to_vec(),
-        |path| fs::read(path).unwrap_or_else(|_| default.to_vec()),
-    )
+    path.as_ref()
+        .map_or_else(|| default.to_vec(), |path| read(path).unwrap_or_else(|_| default.to_vec()))
 }
