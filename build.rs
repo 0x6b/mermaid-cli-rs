@@ -8,9 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for resource in [
         ("https://github.com/adobe-fonts/source-han-sans/raw/release/Variable/WOFF2/OTF/Subset/SourceHanSansJP-VF.otf.woff2", "SourceHanSansJP-VF.otf.woff2"),
-        ("https://raw.githubusercontent.com/adobe-fonts/source-han-sans/master/LICENSE.txt", "SourceHanSansJP-VF.otf.woff2.LICENSE"),
-        ("https://cdn.jsdelivr.net/npm/mermaid@9.4.0/dist/mermaid.min.js", "mermaid@9.4.0.min.js"),
-        ("https://raw.githubusercontent.com/mermaid-js/mermaid/v9.4.0/LICENSE", "mermaid@9.4.0.min.js.LICENSE"),
+        ("https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js", "mermaid@10.6.1.min.mjs"),
     ] {
         let blob = get(resource.0)?.bytes()?;
         let mut out = File::create(assets_root.join(resource.1))?;
