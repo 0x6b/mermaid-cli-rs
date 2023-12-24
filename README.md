@@ -1,6 +1,6 @@
 # mermaid-cli-rs
 
-A naive Rust port of [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli), a command-line tool for the [Mermaid](https://mermaid.js.org/), for easy deployment.
+A naive Rust port of [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli), a command-line tool for the [Mermaid](https://mermaid.js.org/), for easy deployment—no internet access, one binary file.
 
 Tested on Apple Silicon but might be cross-platform.
 
@@ -63,6 +63,6 @@ Summary
 The binary embeds following assets during build. See respective LICENSE for details.
 
 - [Source Han Sans font](https://github.com/adobe-fonts/source-han-sans/raw/release/Variable/WOFF2/OTF/Subset/SourceHanSansJP-VF.otf.woff2) (variable Japanese): [LICENSE](https://raw.githubusercontent.com/adobe-fonts/source-han-sans/master/LICENSE.txt)
-- [Mermaid v9.4.0](https://github.com/mermaid-js/mermaid/tree/v9.4.0): [LICENSE](https://raw.githubusercontent.com/mermaid-js/mermaid/v9.4.0/LICENSE)
+- [Mermaid v10.6.1](https://github.com/mermaid-js/mermaid/tree/v10.6.1): [LICENSE](https://github.com/mermaid-js/mermaid/blob/v10.6.1/LICENSE)
 
 Others are released under the MIT License. See [LICENSE](LICENSE) for details.
