@@ -43,7 +43,7 @@ const STYLE: &[u8] = include_bytes!("../assets/style.css");
 /// Default configuration for Mermaid.js
 const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 /// Mermaid.js bundle
-const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@9.4.0.min.js");
+const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@10.6.1.min.mjs");
 
 #[tokio::main(worker_threads = 2)]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -106,7 +106,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     match export_mermaid_to_image(&output, width, height, port) {
         Ok(path) => println!("{path}"),
-        Err(why) => panic!("{why}"),
+        Err(why) => panic!("{}", why.to_string()),
     }
 
     Ok(())
@@ -172,7 +172,25 @@ fn convert_mermaid_to_image(
         ImageFormat::Svg => {
             let str = tab
                 .wait_for_element("div#mermaid")?
-                .call_js_fn("function() { return this.innerHTML; }", vec![], true)?
+                .call_js_fn(
+                    &format!(
+                        r#"function() {{
+                            const svg = document.getElementsByTagName?.('svg')?.[0];
+                            const style = document.createElementNS('http://www.w3.org/2000/svg', 'style')
+                            style.appendChild(document.createTextNode({}))
+                            svg.appendChild(style)
+                            return new XMLSerializer().serializeToString(svg);
+                        }}"#,
+                        STYLE
+                            .iter()
+                            .copied()
+                            .map(|b| b.to_string())
+                            .collect::<Vec<String>>()
+                            .join("")
+                    ),
+                    vec![],
+                    true,
+                )?
                 .value
                 .ok_or("failed to extract SVG")?
                 .to_string()

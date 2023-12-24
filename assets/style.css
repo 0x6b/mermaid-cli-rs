@@ -1,3 +1,8 @@
+@font-face {
+    font-family: "Source Han Sans JP";
+    src: url(font) format('woff');
+}
+
 * {
     font-family: "Source Han Sans JP", sans-serif;
     font-size: 0.95em;
