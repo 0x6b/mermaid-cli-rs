@@ -10,11 +10,11 @@
 <div id="mermaid"></div>
 <script>
     window.onload = async () => {
-        let {initialize, mermaidAPI: {render}} = mermaid;
+        let {initialize, render} = mermaid;
         const config = await (await fetch("/config")).json();
         initialize(config);
         const data = await (await fetch("/diagram")).text();
-        await render("svg", data, (svg) => document.getElementById("mermaid").innerHTML = svg);
+        document.getElementById("mermaid").innerHTML = (await render("svg", data)).svg;
     };
 </script>
 </body>
