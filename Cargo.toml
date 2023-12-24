@@ -1,6 +1,6 @@
 [package]
 name = "mermaid-cli-rs"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 authors = ["0x6b"]
 description = "Convert Mermaid diagram to PNG or SVG format."
