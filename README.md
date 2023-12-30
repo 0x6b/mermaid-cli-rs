@@ -38,24 +38,24 @@ Options:
 If you require better performance or more advanced capabilities, we recommend
 using [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli). You can review a rough, not scientific, benchmark I conducted with the diagram example available at [mermaid-js/mermaid/demos/flowchart.html](https://github.com/mermaid-js/mermaid/blob/4e4f2fcfc5367f22edea685b8f48ad2d7525d1c0/demos/flowchart.html).
 
-- Node.js v18.18.0
-- Rust 1.73.0 (cc66ad468 2023-10-03)
-- macOS 14.0 (Sonoma)
+- Node.js v20.10.0
+- Rust 1.75.0 (82e1608df 2023-12-21)
+- macOS 14.2.1 (Sonoma)
 - Apple M1 Max
 
 ```
 $ hyperfine --warmup 5 './node_modules/.bin/mmdc -i test.mmd -o test.png' './target/release/mmdc -i test.mmd -o test.png'
 Benchmark 1: ./node_modules/.bin/mmdc -i test.mmd -o test.png
-  Time (mean ± σ):      1.418 s ±  0.013 s    [User: 0.394 s, System: 0.161 s]
-  Range (min … max):    1.398 s …  1.446 s    10 runs
+  Time (mean ± σ):      1.494 s ±  0.015 s    [User: 1.425 s, System: 0.351 s]
+  Range (min … max):    1.477 s …  1.529 s    10 runs
  
 Benchmark 2: ./target/release/mmdc -i test.mmd -o test.png
-  Time (mean ± σ):      3.833 s ±  0.146 s    [User: 0.184 s, System: 0.104 s]
-  Range (min … max):    3.625 s …  4.059 s    10 runs
+  Time (mean ± σ):      3.990 s ±  0.019 s    [User: 0.148 s, System: 0.120 s]
+  Range (min … max):    3.963 s …  4.018 s    10 runs
  
 Summary
-  './node_modules/.bin/mmdc -i test.mmd -o test.png' ran
-    2.70 ± 0.11 times faster than './target/release/mmdc -i test.mmd -o test.png'
+  ./node_modules/.bin/mmdc -i test.mmd -o test.png ran
+    2.67 ± 0.03 times faster than ./target/release/mmdc -i test.mmd -o test.png
 ```
 
 ## Licenses
