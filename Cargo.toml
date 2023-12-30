@@ -12,9 +12,9 @@ name = "mmdc"
 path = "src/main.rs"
 
 [dependencies]
-axum = "0.7.2"
+axum = "0.7.3"
 camino = "1.1.6"
-clap = { version = "4.4.11", features = ["derive"] }
+clap = { version = "4.4.12", features = ["derive"] }
 headless_chrome = { version = "1.0.8", features = ["fetch"] }
 mime = "0.3.17"
 tokio = { version = "1.35.1", features = ["full"] }
