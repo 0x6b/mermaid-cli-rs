@@ -1,6 +1,6 @@
 [package]
 name = "mermaid-cli-rs"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 authors = ["0x6b"]
 description = "Convert Mermaid diagram to PNG or SVG format."
@@ -12,15 +12,15 @@ name = "mmdc"
 path = "src/main.rs"
 
 [dependencies]
-axum = "0.7.3"
+axum = "0.7.4"
 camino = "1.1.6"
-clap = { version = "4.4.12", features = ["derive"] }
-headless_chrome = { version = "1.0.8", features = ["fetch"] }
+clap = { version = "4.4.18", features = ["derive"] }
+headless_chrome = { version = "1.0.9", features = ["fetch"] }
 mime = "0.3.17"
-tokio = { version = "1.35.1", features = ["full"] }
+tokio = { version = "1.36.0", features = ["full"] }
 
 [build-dependencies]
-reqwest = { version = "0.11.23", features = ["blocking"] }
+reqwest = { version = "0.11.24", features = ["blocking"] }
 
 [profile.release]
 codegen-units = 1
