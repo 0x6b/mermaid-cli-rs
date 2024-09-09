@@ -112,11 +112,15 @@ async fn main() -> Result<()> {
 ///
 /// A string representation of the path to the output file if the export was successful, or an error
 /// if the export failed.
-fn export_mermaid_to_image(output: &str, width: u32, height: u32, port: u16) -> Result<String> {
-    let path = Utf8PathBuf::from(output);
-    let image = convert_mermaid_to_image(width, height, ImageFormat::from(&path), port)?;
-    write(&path, image)?;
-    Ok(path.canonicalize()?.to_string_lossy().to_string())
+fn export_mermaid_to_image(
+    output: &Utf8PathBuf,
+    width: u32,
+    height: u32,
+    port: u16,
+) -> Result<String> {
+    let image = convert_mermaid_to_image(width, height, ImageFormat::from(output), port)?;
+    write(output, image)?;
+    Ok(output.canonicalize()?.to_string_lossy().to_string())
 }
 
 /// Convert a Mermaid diagram to an image in the specified file format.
@@ -197,7 +201,7 @@ fn convert_mermaid_to_image(
 ///
 /// A vector of bytes representing the contents of the file at the given path, or the default value
 /// if the path is `None` or the file cannot be read.
-fn from_file_or_default(path: &Option<String>, default: &[u8]) -> Vec<u8> {
+fn from_file_or_default(path: &Option<Utf8PathBuf>, default: &[u8]) -> Vec<u8> {
     path.as_ref()
         .map_or_else(|| default.to_vec(), |path| read(path).unwrap_or_else(|_| default.to_vec()))
 }

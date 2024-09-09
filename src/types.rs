@@ -8,12 +8,12 @@ use clap::Parser;
 pub(crate) struct Args {
     /// Path to the Mermaid diagram file. Specify `-` for stdin.
     #[arg(short = 'i', long = "input")]
-    pub(crate) diagram: String,
+    pub(crate) diagram: Utf8PathBuf,
 
     /// Path to the output file. By default, the file format is PNG. Specify a `.svg` extension if
     /// you need an SVG file.
     #[arg(short, long)]
-    pub(crate) output: String,
+    pub(crate) output: Utf8PathBuf,
 
     /// Width of the output image in pixels.
     #[arg(short, long, default_value = "1960")]
@@ -25,11 +25,11 @@ pub(crate) struct Args {
 
     /// Path to a CSS file for the HTML page.
     #[arg(short = 'c', long = "cssFile")]
-    pub(crate) style: Option<String>,
+    pub(crate) style: Option<Utf8PathBuf>,
 
     /// Path to a JSON configuration file for Mermaid.
     #[arg(short = 'C', long = "configFile")]
-    pub(crate) config: Option<String>,
+    pub(crate) config: Option<Utf8PathBuf>,
 }
 
 /// Resources used by the application.
