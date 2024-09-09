@@ -30,18 +30,11 @@ pub(crate) struct Args {
     /// Path to a JSON configuration file for Mermaid.
     #[arg(short = 'C', long = "configFile")]
     pub(crate) config: Option<String>,
-
-    /// Path to a font file for Mermaid.
-    #[arg(short, long)]
-    pub(crate) font: Option<String>,
 }
 
 /// Resources used by the application.
 #[derive(Default)]
 pub(crate) struct Store {
-    /// The font used by the HTML page.
-    pub(crate) font: Vec<u8>,
-
     /// The CSS styles used by the HTML page.
     pub(crate) style: Vec<u8>,
 
