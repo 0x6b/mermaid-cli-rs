@@ -1,10 +1,21 @@
+# Rust build artifacts
 /target
+
+# Local temporary files
 /*.mmd
-*.svg
-*.png
+/*.svg
+/*.png
+
+# Download on build
 /assets/mermaid*
-/assets/SourceHanSansJP*
+
+# For local testing
+/assets/index-test.html
+/assets/test.mmd
 /samples
+
+# Node.js related files
+/.mise.toml
 /package-lock.json
 /package.json
 /node_modules
