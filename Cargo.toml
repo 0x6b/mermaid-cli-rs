@@ -12,6 +12,7 @@ name = "mmdc"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1.0.87"
 axum = "0.7.5"
 camino = "1.1.9"
 clap = { version = "4.5.17", features = ["derive"] }

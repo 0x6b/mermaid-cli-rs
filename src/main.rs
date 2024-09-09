@@ -2,13 +2,13 @@
 //!
 //! Convert Mermaid diagram to PNG or SVG format, without external network access.
 use std::{
-    error::Error,
     fs::{read, write},
     io::{stdin, Read},
     net::SocketAddr,
     sync::{Arc, RwLock},
 };
 
+use anyhow::{anyhow, Result};
 use axum::{
     extract::{Path, State},
     http::{header, HeaderValue, StatusCode},
@@ -42,7 +42,7 @@ const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@10.6.1.min.mjs");
 
 #[tokio::main(worker_threads = 2)]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let Args { style, config, diagram, width, height, output } = Args::parse();
 
     // A shared storage for resources used to serve.
@@ -112,12 +112,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 ///
 /// A string representation of the path to the output file if the export was successful, or an error
 /// if the export failed.
-fn export_mermaid_to_image(
-    output: &str,
-    width: u32,
-    height: u32,
-    port: u16,
-) -> Result<String, Box<dyn Error>> {
+fn export_mermaid_to_image(output: &str, width: u32, height: u32, port: u16) -> Result<String> {
     let path = Utf8PathBuf::from(output);
     let image = convert_mermaid_to_image(width, height, ImageFormat::from(&path), port)?;
     write(&path, image)?;
@@ -142,7 +137,7 @@ fn convert_mermaid_to_image(
     height: u32,
     format: ImageFormat,
     port: u16,
-) -> Result<Vec<u8>, Box<dyn Error>> {
+) -> Result<Vec<u8>> {
     let browser = Browser::new(
         LaunchOptionsBuilder::default()
             .window_size(Some((width, height)))
@@ -178,7 +173,7 @@ fn convert_mermaid_to_image(
                     true,
                 )?
                 .value
-                .ok_or("failed to extract SVG")?
+                .ok_or(anyhow!("failed to extract SVG"))?
                 .to_string()
                 .replace(r#"\""#, r#"""#); // `this.innerHTML` returns double quoted string
             str[1..(str.len() - 1)].as_bytes().to_vec() // omit first and last "
