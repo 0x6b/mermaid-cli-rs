@@ -22,7 +22,7 @@ use headless_chrome::{
     protocol::cdp::Page::CaptureScreenshotFormatOption::Png, Browser, LaunchOptionsBuilder,
 };
 use mime::{APPLICATION_JSON, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8};
-use tokio::{net::TcpListener, spawn};
+use tokio::{fs::read_to_string, net::TcpListener, spawn};
 
 use crate::{
     macros::response,
@@ -47,8 +47,8 @@ async fn main() -> Result<()> {
 
     // A shared storage for resources used to serve.
     let shared_store = Arc::new(RwLock::new(Store {
-        style: from_file_or_default(&style, STYLE),
-        config: from_file_or_default(&config, CONFIG),
+        style: from_file_or_default(&style, STYLE).await.to_vec(),
+        config: from_file_or_default(&config, CONFIG).await.to_vec(),
         diagram: {
             if &diagram == "-" {
                 let mut input = String::new();
@@ -201,7 +201,13 @@ fn convert_mermaid_to_image(
 ///
 /// A vector of bytes representing the contents of the file at the given path, or the default value
 /// if the path is `None` or the file cannot be read.
-fn from_file_or_default(path: &Option<Utf8PathBuf>, default: &[u8]) -> Vec<u8> {
-    path.as_ref()
-        .map_or_else(|| default.to_vec(), |path| read(path).unwrap_or_else(|_| default.to_vec()))
+async fn from_file_or_default<'a>(path: &'a Option<Utf8PathBuf>, default: &'a [u8]) -> &'a [u8] {
+    match path {
+        Some(pathlike) if pathlike.exists() => {
+            let content = read_to_string(&pathlike).await.unwrap_or_default();
+            // Leak the content to make it have a static lifetime.
+            Box::leak(content.into_boxed_str()).as_bytes()
+        }
+        _ => default,
+    }
 }
