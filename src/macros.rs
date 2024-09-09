@@ -12,15 +12,15 @@
 /// # Example
 ///
 /// ```norun
-/// response!(FONT_WOFF, store.font)
+/// response!(TEXT_CSS_UTF_8, store.style)
 /// ```
 ///
 /// will be
 ///
 /// ```norun
 /// (
-///     [(header::CONTENT_TYPE, HeaderValue::from_static(FONT_WOFF.as_ref()))],
-///     (store.font).clone(),
+///     [(header::CONTENT_TYPE, HeaderValue::from_static(TEXT_CSS_UTF_8.as_ref()))],
+///     (store.style).clone(),
 /// ).into_response()
 /// ```
 

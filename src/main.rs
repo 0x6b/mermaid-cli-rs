@@ -21,9 +21,7 @@ use clap::Parser;
 use headless_chrome::{
     protocol::cdp::Page::CaptureScreenshotFormatOption::Png, Browser, LaunchOptionsBuilder,
 };
-use mime::{
-    APPLICATION_JSON, FONT_WOFF, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8,
-};
+use mime::{APPLICATION_JSON, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8};
 use tokio::{net::TcpListener, spawn};
 
 use crate::{
@@ -36,8 +34,6 @@ mod types;
 
 /// HTML used to export a diagram to supported image
 const HTML: &[u8] = include_bytes!("../assets/index.html");
-/// Default font for the diagram
-const FONT: &[u8] = include_bytes!("../assets/SourceHanSansJP-VF.otf.woff2");
 /// Default stylesheet
 const STYLE: &[u8] = include_bytes!("../assets/style.css");
 /// Default configuration for Mermaid.js
@@ -47,19 +43,10 @@ const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@10.6.1.min.mjs");
 
 #[tokio::main(worker_threads = 2)]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let Args {
-        font,
-        style,
-        config,
-        diagram,
-        width,
-        height,
-        output,
-    } = Args::parse();
+    let Args { style, config, diagram, width, height, output } = Args::parse();
 
     // A shared storage for resources used to serve.
     let shared_store = Arc::new(RwLock::new(Store {
-        font: from_file_or_default(&font, FONT),
         style: from_file_or_default(&style, STYLE),
         config: from_file_or_default(&config, CONFIG),
         diagram: {
@@ -83,7 +70,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
             get(|Path(path): Path<String>, State(state): State<SharedState>| async move {
                 match state.read() {
                     Ok(store) => match path.as_ref() {
-                        "font" => response!(FONT_WOFF, store.font),
                         "style" => response!(TEXT_CSS_UTF_8, store.style),
                         "config" => response!(APPLICATION_JSON, store.config),
                         "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
