@@ -84,16 +84,16 @@ impl Exporter<Uninitialized> {
     /// - `diagram` - The path to the Mermaid diagram to export. If the path is `-`, the diagram
     ///   will be read from standard input.
     pub async fn new(
+        diagram: &Utf8PathBuf,
         style: Option<Utf8PathBuf>,
         config: Option<Utf8PathBuf>,
-        diagram: Utf8PathBuf,
     ) -> Result<Exporter<Initialized>> {
         // A shared storage for resources used to serve.
         let shared_store = Arc::new(RwLock::new(Store {
             style: Self::from_file_or_default(&style, STYLE).await.to_vec(),
             config: Self::from_file_or_default(&config, CONFIG).await.to_vec(),
             diagram: {
-                if &diagram == "-" {
+                if diagram == "-" {
                     let mut input = String::new();
                     let mut handle = stdin().lock();
                     handle.read_to_string(&mut input)?;

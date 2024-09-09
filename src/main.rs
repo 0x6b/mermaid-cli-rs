@@ -15,7 +15,7 @@ mod types;
 async fn main() -> Result<()> {
     let Args { style, config, diagram, width, height, output } = Args::parse();
 
-    let exporter = Exporter::new(style, config, diagram).await?;
+    let exporter = Exporter::new(&diagram, style, config).await?;
     let exporter = exporter.launch().await?;
     let path = exporter.export_mermaid_to_image(&output, width, height).await?;
     println!("{path}");
