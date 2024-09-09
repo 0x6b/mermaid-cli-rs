@@ -28,7 +28,6 @@ Options:
   -H, --height <HEIGHT>      Height of the output image in pixels. This value is automatically reduced to fit the image [default: 2160]
   -c, --cssFile <STYLE>      Path to a CSS file for the HTML page
   -C, --configFile <CONFIG>  Path to a JSON configuration file for Mermaid
-  -f, --font <FONT>          Path to a font file for Mermaid
   -h, --help                 Print help
   -V, --version              Print version
 ```
@@ -60,9 +59,8 @@ Summary
 
 ## Licenses
 
-The binary embeds following assets during build. See respective LICENSE for details.
+The binary embeds following asset during build. See the respective LICENSE for details.
 
-- [Source Han Sans font](https://github.com/adobe-fonts/source-han-sans/raw/release/Variable/WOFF2/OTF/Subset/SourceHanSansJP-VF.otf.woff2) (variable Japanese): [LICENSE](https://raw.githubusercontent.com/adobe-fonts/source-han-sans/master/LICENSE.txt)
 - [Mermaid v10.6.1](https://github.com/mermaid-js/mermaid/tree/v10.6.1): [LICENSE](https://github.com/mermaid-js/mermaid/blob/v10.6.1/LICENSE)
 
 Others are released under the MIT License. See [LICENSE](LICENSE) for details.
