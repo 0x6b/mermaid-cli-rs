@@ -17,8 +17,8 @@ async fn main() -> Result<()> {
 
     let exporter = Exporter::new(&diagram, style, config).await?;
     let exporter = exporter.launch().await?;
-    let path = exporter.export_mermaid_to_image(&output, width, height).await?;
-    println!("{path}");
+    exporter.export_mermaid_to_image(&output, width, height).await?;
+    println!("{output}");
 
     Ok(())
 }

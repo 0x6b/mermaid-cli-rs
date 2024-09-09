@@ -184,20 +184,15 @@ impl Exporter<Launched> {
     ///   extension (e.g., `.png` for a PNG image, `.svg` for an SVG image).
     /// - `width` - The width of the generated image.
     /// - `height` - The height of the generated image.
-    ///
-    /// # Returns
-    ///
-    /// A string representation of the path to the output file if the export was successful, or an
-    /// error if the export failed.
     pub async fn export_mermaid_to_image(
         &self,
         output: &Utf8PathBuf,
         width: u32,
         height: u32,
-    ) -> Result<String> {
+    ) -> Result<()> {
         let image = self.convert_mermaid_to_image(width, height, ImageFormat::from(output))?;
         write(output, image).await?;
-        Ok(output.canonicalize()?.to_string_lossy().to_string())
+        Ok(())
     }
 
     /// Convert a Mermaid diagram to an image in the specified file format.
@@ -263,5 +258,71 @@ impl Exporter<Launched> {
                 .wait_for_element("div#mermaid > svg#svg")?
                 .capture_screenshot(Png)?,
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::path::Path;
+
+    use anyhow::Result;
+    use camino::Utf8PathBuf;
+    use sha2::{Digest, Sha256};
+    use tokio::fs::{read, remove_file};
+
+    use crate::exporter::Exporter;
+
+    macro_rules! run_test {
+        ($name:ident, $hash:literal) => {
+            #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+            async fn $name() {
+                test(stringify!($name), $hash).await;
+            }
+        };
+    }
+
+    run_test!(architecture, "e85dd5164f3aec31e9dddc8059ee2b17f6cfd4d6837581db3937987a1b6c5fc0");
+    run_test!(block_diagram, "90e26eb30344f2ae58431fa344967bc153bfe24c456961c03e7c276a98d1a728");
+    run_test!(c4_diagram, "35767c08e3f051645d50889cdb52d2ea30fe7b64b95849ec504ecd8cc77b425a");
+    run_test!(class_diagram, "8db6c688ed8175be79494db3c3f4078923472d607029a7c5d3913acc9bf058c1");
+    run_test!(er_diagram, "770951e75076edcc1f5c11a6210f673a784c270860169ee632679345a0926e74");
+    run_test!(flowchart, "fcf51a9179c9997057971e28994aecbf5238f0eb248a72be4fbce06b2c183891"); // not looking good, though
+    run_test!(gantt, "ac0b08e06228e981bcac210dd1288c43882ebcefc01c0a1d35e8a518e8afe50e");
+    run_test!(git_graph, "d1997271f23a758f9c90ba563ec0b8b32ad0509f85102ee1e40a5a1e5dbe3792");
+    run_test!(mindmaps, "96f3650f393cc6e5df8fd682427171d941e379b425a9ff4b1fc71b296e37735f");
+    run_test!(packet, "1606b7e009594b9c7edbb29f0f404b1434e75f0e04bddb19f7e645664796db9a");
+    run_test!(pie_chart, "b91906f72effb4e5efa8f049c5a0b9c787fda5f59b80bfbb900e82a2efa2ce16");
+    run_test!(quadrant_chart, "c9369f8d6e69ed440042197fdb2583b97d6c2f9f0dddbdd8de8f697d0c991abf");
+    run_test!(req_diagram, "59f5c1de673548bb0f1fd962c9156ec98721196d53dc7f032ee483439e1928bd");
+    run_test!(sankey, "4ba7c62739885a73bd86b64e1308b9bb199e95c3a8ff83e7ec5ef503a312b8fd");
+    run_test!(sequence_diagram, "f81f3aaa1564291ef00ef7cd23bf84d0a5e3346abfcf4a882b5715ec09528d59");
+    run_test!(state_diagram, "532a4724d32757928cdd6401902b85447b16c43a11d53bcdbc149a0aaaac304d");
+    run_test!(timeline, "ff73a710037ecaec6a16058c9abf35522f12c95fae4a3e78822c1ad6a982c9ab");
+    run_test!(user_journey, "632edd8f21c4ecd545851791337def8fe450ea4444dd1e80794289529de95dfd");
+    run_test!(xy_chart, "807cf8ebd3b151b09cd9b5cd2fdaa73da71acf869379969ef037ef7d99820a60");
+
+    async fn test<'a>(name: &'a str, hash: &'a str) {
+        let input = Utf8PathBuf::from(format!("tests/fixtures/{name}.mmd").as_str());
+        let output = Utf8PathBuf::from(format!("tests/fixtures/{name}.png").as_str());
+        let exporter = Exporter::new(&input, None, None).await.unwrap();
+        let exporter = exporter.launch().await.unwrap();
+        let _ = exporter.export_mermaid_to_image(&output, 1960, 2160).await.unwrap();
+        let calculated_hash = calculate_hash(&output).await.unwrap();
+        assert_eq!(calculated_hash, hash);
+        remove_file(&output).await.unwrap();
+    }
+
+    async fn calculate_hash<P>(path: P) -> Result<String>
+    where
+        P: AsRef<Path>,
+    {
+        let mut hasher = Sha256::new();
+        hasher.update(read(&path).await?);
+        let hash = hasher.finalize();
+        let hex = hash.iter().fold(String::new(), |mut output, b| {
+            output.push_str(&format!("{b:02x}"));
+            output
+        });
+        Ok(hex)
     }
 }
