@@ -5,6 +5,7 @@ use std::{
     fs::{read, write},
     io::{stdin, Read},
     net::SocketAddr,
+    ops::Deref,
     sync::{Arc, RwLock},
 };
 
@@ -13,7 +14,7 @@ use axum::{
     extract::{Path, State},
     http::{header, HeaderValue, StatusCode},
     response::IntoResponse,
-    routing::get,
+    routing::{get, IntoMakeService},
     serve, Router,
 };
 use camino::Utf8PathBuf;
@@ -41,173 +42,231 @@ const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 /// Mermaid.js bundle
 const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@11.2.0.min.mjs");
 
-#[tokio::main(worker_threads = 2)]
-async fn main() -> Result<()> {
-    let Args { style, config, diagram, width, height, output } = Args::parse();
+pub struct Exporter<S>
+where
+    S: ExporterState,
+{
+    state: S,
+}
 
-    // A shared storage for resources used to serve.
-    let shared_store = Arc::new(RwLock::new(Store {
-        style: from_file_or_default(&style, STYLE).await.to_vec(),
-        config: from_file_or_default(&config, CONFIG).await.to_vec(),
-        diagram: {
-            if &diagram == "-" {
-                let mut input = String::new();
-                let mut handle = stdin().lock();
-                handle.read_to_string(&mut input)?;
-                input.into_bytes()
-            } else {
-                read(&diagram).unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
-            }
-        },
-        mermaid_js: MERMAID_JS.to_vec(),
-    }));
+pub trait ExporterState {}
 
-    // Create a server to handle HTTP requests.
-    let app = Router::new()
-        .route("/", get(|| async { response!(TEXT_HTML, HTML) }))
-        .route(
-            "/:path",
-            get(|Path(path): Path<String>, State(state): State<SharedState>| async move {
-                match state.read() {
-                    Ok(store) => match path.as_ref() {
-                        "style" => response!(TEXT_CSS_UTF_8, store.style),
-                        "config" => response!(APPLICATION_JSON, store.config),
-                        "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
-                        "mermaid_js" => response!(TEXT_JAVASCRIPT, store.mermaid_js),
-                        _ => StatusCode::NOT_FOUND.into_response(),
-                    },
-                    Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+impl<S> Deref for Exporter<S>
+where
+    S: ExporterState,
+{
+    type Target = S;
+
+    fn deref(&self) -> &Self::Target {
+        &self.state
+    }
+}
+
+#[allow(dead_code)] // This is just a marker struct
+pub struct Uninitialized {}
+impl ExporterState for Uninitialized {}
+
+impl Exporter<Uninitialized> {
+    pub async fn new(
+        style: Option<Utf8PathBuf>,
+        config: Option<Utf8PathBuf>,
+        diagram: Utf8PathBuf,
+    ) -> Result<Exporter<Initialized>> {
+        // A shared storage for resources used to serve.
+        let shared_store = Arc::new(RwLock::new(Store {
+            style: Self::from_file_or_default(&style, STYLE).await.to_vec(),
+            config: Self::from_file_or_default(&config, CONFIG).await.to_vec(),
+            diagram: {
+                if &diagram == "-" {
+                    let mut input = String::new();
+                    let mut handle = stdin().lock();
+                    handle.read_to_string(&mut input)?;
+                    input.into_bytes()
+                } else {
+                    read(&diagram)
+                        .unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
                 }
-            }),
-        )
-        .with_state(Arc::clone(&shared_store));
+            },
+            mermaid_js: MERMAID_JS.to_vec(),
+        }));
 
-    // Bind the HTTP server to a local address.
-    let addr = SocketAddr::from(([127, 0, 0, 1], 0));
-    let listener = TcpListener::bind(&addr).await?;
-    let port = listener.local_addr()?.port();
-    spawn(async {
-        serve(listener, app.into_make_service()).await.unwrap();
-    });
+        // Create a server to handle HTTP requests.
+        let app = Router::new()
+            .route("/", get(|| async { response!(TEXT_HTML, HTML) }))
+            .route(
+                "/:path",
+                get(|Path(path): Path<String>, State(state): State<SharedState>| async move {
+                    match state.read() {
+                        Ok(store) => match path.as_ref() {
+                            "style" => response!(TEXT_CSS_UTF_8, store.style),
+                            "config" => response!(APPLICATION_JSON, store.config),
+                            "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
+                            "mermaid_js" => response!(TEXT_JAVASCRIPT, store.mermaid_js),
+                            _ => StatusCode::NOT_FOUND.into_response(),
+                        },
+                        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                    }
+                }),
+            )
+            .with_state(Arc::clone(&shared_store));
 
-    match export_mermaid_to_image(&output, width, height, port) {
-        Ok(path) => println!("{path}"),
-        Err(why) => panic!("{}", why.to_string()),
+        Ok(Exporter {
+            state: Initialized { service: app.into_make_service() },
+        })
     }
 
-    Ok(())
+    /// Read a file from the given path or return a default value if the path is `None` or the file
+    /// cannot be read.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - An optional string representing the path to a file to read.
+    /// * `default` - A byte slice representing the default value to return if `path` is `None` or
+    ///   the file cannot be read.
+    ///
+    /// # Returns
+    ///
+    /// A vector of bytes representing the contents of the file at the given path, or the default
+    /// value if the path is `None` or the file cannot be read.
+    async fn from_file_or_default<'a>(
+        path: &'a Option<Utf8PathBuf>,
+        default: &'a [u8],
+    ) -> &'a [u8] {
+        match path {
+            Some(pathlike) if pathlike.exists() => {
+                let content = read_to_string(&pathlike).await.unwrap_or_default();
+                // Leak the content to make it have a static lifetime.
+                Box::leak(content.into_boxed_str()).as_bytes()
+            }
+            _ => default,
+        }
+    }
 }
 
-/// Export a Mermaid diagram to a file specified by the `output` argument.
-///
-/// # Arguments
-///
-/// * `output` - The path to the output file. The file format will be determined by the file
-///   extension (e.g., `.png` for a PNG image, `.svg` for an SVG image).
-/// * `width` - The width of the generated image.
-/// * `height` - The height of the generated image.
-/// * `port` - The port number to use for the local server serving the Mermaid diagram.
-///
-/// # Returns
-///
-/// A string representation of the path to the output file if the export was successful, or an error
-/// if the export failed.
-fn export_mermaid_to_image(
-    output: &Utf8PathBuf,
-    width: u32,
-    height: u32,
-    port: u16,
-) -> Result<String> {
-    let image = convert_mermaid_to_image(width, height, ImageFormat::from(output), port)?;
-    write(output, image)?;
-    Ok(output.canonicalize()?.to_string_lossy().to_string())
+pub struct Initialized {
+    pub service: IntoMakeService<Router>,
 }
 
-/// Convert a Mermaid diagram to an image in the specified file format.
-///
-/// # Arguments
-///
-/// * `width` - The width of the generated image.
-/// * `height` - The height of the generated image.
-/// * `file_type` - The file format to use for the output image.
-/// * `port` - The port number to use for the local server serving the Mermaid diagram.
-///
-/// # Returns
-///
-/// A `Result` containing `Vec<u8>` representing the generated image if the export was successful,
-/// or an error if the export failed.
-fn convert_mermaid_to_image(
-    width: u32,
-    height: u32,
-    format: ImageFormat,
+impl ExporterState for Initialized {}
+
+impl Exporter<Initialized> {
+    /// Launch the HTTP server.
+    pub async fn launch(&self) -> Result<Exporter<Launched>> {
+        let addr = SocketAddr::from(([127, 0, 0, 1], 0));
+        let listener = TcpListener::bind(&addr).await?;
+        let port = listener.local_addr()?.port();
+        let service = self.service.clone();
+        spawn(async {
+            serve(listener, service).await.unwrap();
+        });
+
+        Ok(Exporter { state: Launched { port } })
+    }
+}
+
+pub struct Launched {
     port: u16,
-) -> Result<Vec<u8>> {
-    let browser = Browser::new(
-        LaunchOptionsBuilder::default()
-            .window_size(Some((width, height)))
-            .headless(true)
-            .build()?,
-    )?;
-    let tab = browser.new_tab()?;
+}
+impl ExporterState for Launched {}
 
-    tab.navigate_to(&format!("http://127.0.0.1:{port}/"))?;
-    tab.wait_until_navigated()?;
+impl Exporter<Launched> {
+    /// Export a Mermaid diagram to a file specified by the `output` argument.
+    ///
+    /// # Arguments
+    ///
+    /// - `output` - The path to the output file. The file format will be determined by the file
+    ///   extension (e.g., `.png` for a PNG image, `.svg` for an SVG image).
+    /// - `width` - The width of the generated image.
+    /// - `height` - The height of the generated image.
+    ///
+    /// # Returns
+    ///
+    /// A string representation of the path to the output file if the export was successful, or an
+    /// error if the export failed.
+    pub fn export_mermaid_to_image(
+        &self,
+        output: &Utf8PathBuf,
+        width: u32,
+        height: u32,
+    ) -> Result<String> {
+        let image = self.convert_mermaid_to_image(width, height, ImageFormat::from(output))?;
+        write(output, image)?;
+        Ok(output.canonicalize()?.to_string_lossy().to_string())
+    }
 
-    Ok(match format {
-        ImageFormat::Svg => {
-            let str = tab
-                .wait_for_element("div#mermaid")?
-                .call_js_fn(
-                    &format!(
-                        r#"function() {{
+    /// Convert a Mermaid diagram to an image in the specified file format.
+    ///
+    /// # Arguments
+    ///
+    /// * `width` - The width of the generated image.
+    /// * `height` - The height of the generated image.
+    /// * `file_type` - The file format to use for the output image.
+    /// * `port` - The port number to use for the local server serving the Mermaid diagram.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `Vec<u8>` representing the generated image if the export was
+    /// successful, or an error if the export failed.
+    fn convert_mermaid_to_image(
+        &self,
+        width: u32,
+        height: u32,
+        format: ImageFormat,
+    ) -> Result<Vec<u8>> {
+        let browser = Browser::new(
+            LaunchOptionsBuilder::default()
+                .window_size(Some((width, height)))
+                .headless(true)
+                .build()?,
+        )?;
+        let tab = browser.new_tab()?;
+
+        tab.navigate_to(&format!("http://127.0.0.1:{}/", self.port))?;
+        tab.wait_until_navigated()?;
+
+        Ok(match format {
+            ImageFormat::Svg => {
+                let str = tab
+                    .wait_for_element("div#mermaid")?
+                    .call_js_fn(
+                        &format!(
+                            r#"function() {{
                             const svg = document.getElementsByTagName?.('svg')?.[0];
                             const style = document.createElementNS('http://www.w3.org/2000/svg', 'style')
                             style.appendChild(document.createTextNode({}))
                             svg.appendChild(style)
                             return new XMLSerializer().serializeToString(svg);
                         }}"#,
-                        STYLE
-                            .iter()
-                            .copied()
-                            .map(|b| b.to_string())
-                            .collect::<Vec<String>>()
-                            .join("")
-                    ),
-                    vec![],
-                    true,
-                )?
-                .value
-                .ok_or(anyhow!("failed to extract SVG"))?
-                .to_string()
-                .replace(r#"\""#, r#"""#); // `this.innerHTML` returns double quoted string
-            str[1..(str.len() - 1)].as_bytes().to_vec() // omit first and last "
-        }
-        ImageFormat::Png => tab
-            .wait_for_element("div#mermaid > svg#svg")?
-            .capture_screenshot(Png)?,
-    })
+                            STYLE
+                                .iter()
+                                .copied()
+                                .map(|b| b.to_string())
+                                .collect::<Vec<String>>()
+                                .join("")
+                        ),
+                        vec![],
+                        true,
+                    )?
+                    .value
+                    .ok_or(anyhow!("failed to extract SVG"))?
+                    .to_string()
+                    .replace(r#"\""#, r#"""#); // `this.innerHTML` returns double quoted string
+                str[1..(str.len() - 1)].as_bytes().to_vec() // omit first and last "
+            }
+            ImageFormat::Png => tab
+                .wait_for_element("div#mermaid > svg#svg")?
+                .capture_screenshot(Png)?,
+        })
+    }
 }
 
-/// Read a file from the given path or return a default value if the path is `None` or the file
-/// cannot be read.
-///
-/// # Arguments
-///
-/// * `path` - An optional string representing the path to a file to read.
-/// * `default` - A byte slice representing the default value to return if `path` is `None` or the
-///   file cannot be read.
-///
-/// # Returns
-///
-/// A vector of bytes representing the contents of the file at the given path, or the default value
-/// if the path is `None` or the file cannot be read.
-async fn from_file_or_default<'a>(path: &'a Option<Utf8PathBuf>, default: &'a [u8]) -> &'a [u8] {
-    match path {
-        Some(pathlike) if pathlike.exists() => {
-            let content = read_to_string(&pathlike).await.unwrap_or_default();
-            // Leak the content to make it have a static lifetime.
-            Box::leak(content.into_boxed_str()).as_bytes()
-        }
-        _ => default,
-    }
+#[tokio::main(worker_threads = 2)]
+async fn main() -> Result<()> {
+    let Args { style, config, diagram, width, height, output } = Args::parse();
+    let exporter = Exporter::new(style, config, diagram).await?;
+    let exporter = exporter.launch().await?;
+    let path = exporter.export_mermaid_to_image(&output, width, height)?;
+    println!("{path}");
+
+    Ok(())
 }
