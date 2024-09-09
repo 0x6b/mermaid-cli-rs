@@ -2,13 +2,13 @@
 //!
 //! Convert Mermaid diagram to PNG or SVG format, without external network access.
 use std::{
-    error::Error,
     fs::{read, write},
     io::{stdin, Read},
     net::SocketAddr,
     sync::{Arc, RwLock},
 };
 
+use anyhow::{anyhow, Result};
 use axum::{
     extract::{Path, State},
     http::{header, HeaderValue, StatusCode},
@@ -22,7 +22,7 @@ use headless_chrome::{
     protocol::cdp::Page::CaptureScreenshotFormatOption::Png, Browser, LaunchOptionsBuilder,
 };
 use mime::{APPLICATION_JSON, TEXT_CSS_UTF_8, TEXT_HTML, TEXT_JAVASCRIPT, TEXT_PLAIN_UTF_8};
-use tokio::{net::TcpListener, spawn};
+use tokio::{fs::read_to_string, net::TcpListener, spawn};
 
 use crate::{
     macros::response,
@@ -42,13 +42,13 @@ const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@10.6.1.min.mjs");
 
 #[tokio::main(worker_threads = 2)]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let Args { style, config, diagram, width, height, output } = Args::parse();
 
     // A shared storage for resources used to serve.
     let shared_store = Arc::new(RwLock::new(Store {
-        style: from_file_or_default(&style, STYLE),
-        config: from_file_or_default(&config, CONFIG),
+        style: from_file_or_default(&style, STYLE).await.to_vec(),
+        config: from_file_or_default(&config, CONFIG).await.to_vec(),
         diagram: {
             if &diagram == "-" {
                 let mut input = String::new();
@@ -113,15 +113,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 /// A string representation of the path to the output file if the export was successful, or an error
 /// if the export failed.
 fn export_mermaid_to_image(
-    output: &str,
+    output: &Utf8PathBuf,
     width: u32,
     height: u32,
     port: u16,
-) -> Result<String, Box<dyn Error>> {
-    let path = Utf8PathBuf::from(output);
-    let image = convert_mermaid_to_image(width, height, ImageFormat::from(&path), port)?;
-    write(&path, image)?;
-    Ok(path.canonicalize()?.to_string_lossy().to_string())
+) -> Result<String> {
+    let image = convert_mermaid_to_image(width, height, ImageFormat::from(output), port)?;
+    write(output, image)?;
+    Ok(output.canonicalize()?.to_string_lossy().to_string())
 }
 
 /// Convert a Mermaid diagram to an image in the specified file format.
@@ -142,7 +141,7 @@ fn convert_mermaid_to_image(
     height: u32,
     format: ImageFormat,
     port: u16,
-) -> Result<Vec<u8>, Box<dyn Error>> {
+) -> Result<Vec<u8>> {
     let browser = Browser::new(
         LaunchOptionsBuilder::default()
             .window_size(Some((width, height)))
@@ -178,7 +177,7 @@ fn convert_mermaid_to_image(
                     true,
                 )?
                 .value
-                .ok_or("failed to extract SVG")?
+                .ok_or(anyhow!("failed to extract SVG"))?
                 .to_string()
                 .replace(r#"\""#, r#"""#); // `this.innerHTML` returns double quoted string
             str[1..(str.len() - 1)].as_bytes().to_vec() // omit first and last "
@@ -202,7 +201,13 @@ fn convert_mermaid_to_image(
 ///
 /// A vector of bytes representing the contents of the file at the given path, or the default value
 /// if the path is `None` or the file cannot be read.
-fn from_file_or_default(path: &Option<String>, default: &[u8]) -> Vec<u8> {
-    path.as_ref()
-        .map_or_else(|| default.to_vec(), |path| read(path).unwrap_or_else(|_| default.to_vec()))
+async fn from_file_or_default<'a>(path: &'a Option<Utf8PathBuf>, default: &'a [u8]) -> &'a [u8] {
+    match path {
+        Some(pathlike) if pathlike.exists() => {
+            let content = read_to_string(&pathlike).await.unwrap_or_default();
+            // Leak the content to make it have a static lifetime.
+            Box::leak(content.into_boxed_str()).as_bytes()
+        }
+        _ => default,
+    }
 }
