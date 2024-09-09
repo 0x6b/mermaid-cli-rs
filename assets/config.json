@@ -1,8 +1,7 @@
 {
   "theme": "base",
   "themeVariables": {
-    "primaryColor": "#34cdd7",
-    "fontFamily": "Source Han Sans JP"
+    "primaryColor": "#34cdd7"
   },
   "securityLevel": "loose",
   "startOnLoad": false
