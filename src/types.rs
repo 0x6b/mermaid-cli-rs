@@ -53,7 +53,7 @@ pub(crate) type SharedState = Arc<RwLock<Store>>;
 
 /// An enum representing supported image file format.
 #[derive(Debug)]
-pub(crate) enum ImageFormat {
+pub enum ImageFormat {
     /// PNG file type. Default.
     Png,
     /// SVG file type.
