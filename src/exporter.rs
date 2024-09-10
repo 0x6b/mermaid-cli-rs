@@ -306,7 +306,7 @@ mod test {
         let output = Utf8PathBuf::from(format!("tests/fixtures/{name}.png").as_str());
         let exporter = Exporter::new(&input, None, None).await.unwrap();
         let exporter = exporter.launch().await.unwrap();
-        let _ = exporter.export_mermaid_to_image(&output, 1960, 2160).await.unwrap();
+        exporter.export_mermaid_to_image(&output, 1960, 2160).await.unwrap();
         let calculated_hash = calculate_hash(&output).await.unwrap();
         assert_eq!(calculated_hash, hash);
         remove_file(&output).await.unwrap();
