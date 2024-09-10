@@ -56,6 +56,7 @@ Benchmark 2: ./target/release/mmdc -i tests/bench.mmd -o test.png
 Summary
   ./node_modules/.bin/mmdc -i tests/bench.mmd -o test.png ran
     2.91 ± 0.04 times faster than ./target/release/mmdc -i tests/bench.mmd -o test.png```
+```
 
 ## Licenses
 
