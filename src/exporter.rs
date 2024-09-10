@@ -301,7 +301,7 @@ mod test {
     run_test!(user_journey, "632edd8f21c4ecd545851791337def8fe450ea4444dd1e80794289529de95dfd");
     run_test!(xy_chart, "807cf8ebd3b151b09cd9b5cd2fdaa73da71acf869379969ef037ef7d99820a60");
 
-    async fn test<'a>(name: &'a str, hash: &'a str) {
+    async fn test(name: &str, hash: &str) {
         let input = Utf8PathBuf::from(format!("tests/fixtures/{name}.mmd").as_str());
         let output = Utf8PathBuf::from(format!("tests/fixtures/{name}.png").as_str());
         let exporter = Exporter::new(&input, None, None).await.unwrap();
