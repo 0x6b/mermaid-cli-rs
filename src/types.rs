@@ -27,7 +27,7 @@ pub(crate) struct Args {
     #[arg(short = 'c', long = "cssFile")]
     pub(crate) style: Option<Utf8PathBuf>,
 
-    /// Path to a JSON configuration file for Mermaid.
+    /// Path to a JSON configuration file for Mermaid. See https://mermaid.js.org/config/setup/interfaces/mermaid.MermaidConfig.html for more information.
     #[arg(short = 'C', long = "configFile")]
     pub(crate) config: Option<Utf8PathBuf>,
 }

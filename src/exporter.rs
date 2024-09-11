@@ -77,12 +77,12 @@ impl Exporter<Uninitialized> {
     ///
     /// # Arguments
     ///
+    /// - `diagram` - The path to the Mermaid diagram to export. If the path is `-`, the diagram
+    ///   will be read from standard input.
     /// - `style` - The path to a custom CSS stylesheet to use for the exported diagram. If `None`,
     ///   the default stylesheet will be used.
     /// - `config` - The path to a custom configuration file for Mermaid.js. If `None`, the default
-    ///   configuration will be used.
-    /// - `diagram` - The path to the Mermaid diagram to export. If the path is `-`, the diagram
-    ///   will be read from standard input.
+    ///   configuration will be used. See [Interface: MermaidConfig](https://mermaid.js.org/config/setup/interfaces/mermaid.MermaidConfig.html) for more information.
     pub async fn new(
         diagram: &Utf8PathBuf,
         style: Option<Utf8PathBuf>,
@@ -201,8 +201,7 @@ impl Exporter<Launched> {
     ///
     /// - `width` - The width of the generated image.
     /// - `height` - The height of the generated image.
-    /// - `file_type` - The file format to use for the output image.
-    /// - `port` - The port number to use for the local server serving the Mermaid diagram.
+    /// - `format` - [`ImageFormat`] enum representing the file format to use for the generated.
     ///
     /// # Returns
     ///
