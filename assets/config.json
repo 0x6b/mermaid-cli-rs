@@ -1,8 +1,5 @@
 {
-  "theme": "base",
-  "themeVariables": {
-    "primaryColor": "#34cdd7"
-  },
+  "theme": "neutral",
   "securityLevel": "loose",
   "startOnLoad": false
 }

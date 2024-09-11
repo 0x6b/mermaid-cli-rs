@@ -77,12 +77,12 @@ impl Exporter<Uninitialized> {
     ///
     /// # Arguments
     ///
+    /// - `diagram` - The path to the Mermaid diagram to export. If the path is `-`, the diagram
+    ///   will be read from standard input.
     /// - `style` - The path to a custom CSS stylesheet to use for the exported diagram. If `None`,
     ///   the default stylesheet will be used.
     /// - `config` - The path to a custom configuration file for Mermaid.js. If `None`, the default
-    ///   configuration will be used.
-    /// - `diagram` - The path to the Mermaid diagram to export. If the path is `-`, the diagram
-    ///   will be read from standard input.
+    ///   configuration will be used. See [Interface: MermaidConfig](https://mermaid.js.org/config/setup/interfaces/mermaid.MermaidConfig.html) for more information.
     pub async fn new(
         diagram: &Utf8PathBuf,
         style: Option<Utf8PathBuf>,
@@ -201,8 +201,7 @@ impl Exporter<Launched> {
     ///
     /// - `width` - The width of the generated image.
     /// - `height` - The height of the generated image.
-    /// - `file_type` - The file format to use for the output image.
-    /// - `port` - The port number to use for the local server serving the Mermaid diagram.
+    /// - `format` - [`ImageFormat`] enum representing the file format to use for the generated.
     ///
     /// # Returns
     ///
@@ -263,12 +262,9 @@ impl Exporter<Launched> {
 
 #[cfg(test)]
 mod test {
-    use std::path::Path;
-
-    use anyhow::Result;
     use camino::Utf8PathBuf;
-    use sha2::{Digest, Sha256};
-    use tokio::fs::{read, remove_file};
+    use sha2_hasher::Sha2Hasher;
+    use tokio::fs::remove_file;
 
     use crate::exporter::Exporter;
 
@@ -281,48 +277,37 @@ mod test {
         };
     }
 
-    run_test!(architecture, "e85dd5164f3aec31e9dddc8059ee2b17f6cfd4d6837581db3937987a1b6c5fc0");
-    run_test!(block_diagram, "90e26eb30344f2ae58431fa344967bc153bfe24c456961c03e7c276a98d1a728");
-    run_test!(c4_diagram, "35767c08e3f051645d50889cdb52d2ea30fe7b64b95849ec504ecd8cc77b425a");
-    run_test!(class_diagram, "8db6c688ed8175be79494db3c3f4078923472d607029a7c5d3913acc9bf058c1");
-    run_test!(er_diagram, "770951e75076edcc1f5c11a6210f673a784c270860169ee632679345a0926e74");
-    run_test!(flowchart, "fcf51a9179c9997057971e28994aecbf5238f0eb248a72be4fbce06b2c183891"); // not looking good, though
-    run_test!(gantt, "ac0b08e06228e981bcac210dd1288c43882ebcefc01c0a1d35e8a518e8afe50e");
-    run_test!(git_graph, "d1997271f23a758f9c90ba563ec0b8b32ad0509f85102ee1e40a5a1e5dbe3792");
-    run_test!(mindmaps, "96f3650f393cc6e5df8fd682427171d941e379b425a9ff4b1fc71b296e37735f");
+    run_test!(architecture, "24725a8534450d9f0dcba0bb0ce3b0eb68dbb81e71684ed5ba57fe1ed15c8947");
+    run_test!(block_diagram, "6c181056b1f10142750111a8cae126b591af60a593e9c5f5e7e877214ba21205");
+    run_test!(c4_diagram, "f5da275365ff2603c31b50099ee8009bfd8d093d66713b862f6583211787a264");
+    run_test!(class_diagram, "b3d76df0a3a760a99ab3c81fbbd4fb4f9991e3cace5607a15e2fa069286def3b");
+    run_test!(er_diagram, "f497b79feb3792a7574959e06a44b6fce3fd1c77af3eba5549832bcc8df248c4");
+    run_test!(flowchart, "52a9ebb72af7f05d2b9c418de7eb5a9dd48451b70eb420ab42e1fa4b47b0d81d"); // not looking good, though
+    run_test!(gantt, "a58369afc4d07420233b72dd307ab98a6b4c4d091ef57cdaead2faa4dc3ce42d");
+    run_test!(git_graph, "7c7430d4db513b057424d2662c92f8ffe82b23ac4d0c4dd9b422a2e07988d5d5");
+    run_test!(mindmaps, "e7c072e4f696225e0cc95058a36afc2bda0f99419c7ca04f07b8e91ab9a65770");
     run_test!(packet, "1606b7e009594b9c7edbb29f0f404b1434e75f0e04bddb19f7e645664796db9a");
-    run_test!(pie_chart, "b91906f72effb4e5efa8f049c5a0b9c787fda5f59b80bfbb900e82a2efa2ce16");
-    run_test!(quadrant_chart, "c9369f8d6e69ed440042197fdb2583b97d6c2f9f0dddbdd8de8f697d0c991abf");
-    run_test!(req_diagram, "59f5c1de673548bb0f1fd962c9156ec98721196d53dc7f032ee483439e1928bd");
-    run_test!(sankey, "4ba7c62739885a73bd86b64e1308b9bb199e95c3a8ff83e7ec5ef503a312b8fd");
-    run_test!(sequence_diagram, "f81f3aaa1564291ef00ef7cd23bf84d0a5e3346abfcf4a882b5715ec09528d59");
-    run_test!(state_diagram, "532a4724d32757928cdd6401902b85447b16c43a11d53bcdbc149a0aaaac304d");
-    run_test!(timeline, "ff73a710037ecaec6a16058c9abf35522f12c95fae4a3e78822c1ad6a982c9ab");
-    run_test!(user_journey, "632edd8f21c4ecd545851791337def8fe450ea4444dd1e80794289529de95dfd");
-    run_test!(xy_chart, "807cf8ebd3b151b09cd9b5cd2fdaa73da71acf869379969ef037ef7d99820a60");
+    run_test!(pie_chart, "de25e7cf1f28c44b1f4c7f82f9ef231c9d2bf036a933197542597050b4408466");
+    run_test!(quadrant_chart, "559d16a223a3f4ef1d1f23a60c1b45188656606a4b595e9f07380c39f1ff5157");
+    run_test!(req_diagram, "f7dd0d6e708e6591b9c20b347e25fc31102da219eac6569b201b51b5ab4c32f8");
+    run_test!(sankey, "638cc725049f3c03f2844dd1b90f63167aa2ba8b5b8beb61f69f9a67194ef9aa");
+    run_test!(sequence_diagram, "880497e8a7e6e6b99cbad8558e76245606b0730dd197f3299169e9478112df44");
+    run_test!(state_diagram, "ae24a640f8309aab40817981c7f207eb3b065f84b3c60cde173195edf4cd8043");
+    run_test!(timeline, "480ed8955001391e78680ee06c2de059244f6077473a76ce7e664203551fe329");
+    run_test!(user_journey, "35ad9065fee67e10720471a02f239850f4f87906f4e56de8a82fbcb19486649a");
+    run_test!(xy_chart, "025db9f1f2417bcacb66efef19bcf0c1ce2f960e573cb609c8c9efb37bd4fe62");
 
     async fn test(name: &str, hash: &str) {
         let input = Utf8PathBuf::from(format!("tests/fixtures/{name}.mmd").as_str());
         let output = Utf8PathBuf::from(format!("tests/fixtures/{name}.png").as_str());
+
         let exporter = Exporter::new(&input, None, None).await.unwrap();
         let exporter = exporter.launch().await.unwrap();
         exporter.export_mermaid_to_image(&output, 1960, 2160).await.unwrap();
-        let calculated_hash = calculate_hash(&output).await.unwrap();
-        assert_eq!(calculated_hash, hash);
-        remove_file(&output).await.unwrap();
-    }
 
-    async fn calculate_hash<P>(path: P) -> Result<String>
-    where
-        P: AsRef<Path>,
-    {
-        let mut hasher = Sha256::new();
-        hasher.update(read(&path).await?);
-        let hash = hasher.finalize();
-        let hex = hash.iter().fold(String::new(), |mut output, b| {
-            output.push_str(&format!("{b:02x}"));
-            output
-        });
-        Ok(hex)
+        let calculated_hash = &output.sha256().unwrap();
+        assert_eq!(calculated_hash, hash);
+
+        remove_file(&output).await.unwrap(); // remove only if the assertion passes
     }
 }

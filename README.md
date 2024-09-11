@@ -17,17 +17,22 @@ $ cargo install https://github.com/0x6b/mermaid-cli-rs
 The CLI supports the following command-line options:
 
 ```
+$ mmdc --help
 Convert Mermaid diagram to PNG or SVG format.
 
 Usage: mmdc [OPTIONS] --input <DIAGRAM> --output <OUTPUT>
 
 Options:
   -i, --input <DIAGRAM>      Path to the Mermaid diagram file. Specify `-` for stdin
-  -o, --output <OUTPUT>      Path to the output file. By default, the file format is PNG. Specify a `.svg` extension if you need an SVG file
+  -o, --output <OUTPUT>      Path to the output file. By default, the file format is PNG. Specify a
+                             `.svg` extension if you need an SVG file
   -w, --width <WIDTH>        Width of the output image in pixels [default: 1960]
-  -H, --height <HEIGHT>      Height of the output image in pixels. This value is automatically reduced to fit the image [default: 2160]
+  -H, --height <HEIGHT>      Height of the output image in pixels. This value is automatically reduced
+                             to fit the image [default: 2160]
   -c, --cssFile <STYLE>      Path to a CSS file for the HTML page
-  -C, --configFile <CONFIG>  Path to a JSON configuration file for Mermaid
+  -C, --configFile <CONFIG>  Path to a JSON configuration file for Mermaid. See
+                             https://mermaid.js.org/config/setup/interfaces/mermaid.MermaidConfig.html
+                             for more information
   -h, --help                 Print help
   -V, --version              Print version
 ```
