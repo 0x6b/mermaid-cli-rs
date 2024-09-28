@@ -52,16 +52,16 @@ using [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli). You c
 $ cargo build --release
 $ hyperfine --warmup 5 './node_modules/.bin/mmdc -i tests/bench.mmd -o test.png' './target/release/mmdc -i tests/bench.mmd -o test.png'
 Benchmark 1: ./node_modules/.bin/mmdc -i tests/bench.mmd -o test.png
-  Time (mean ± σ):      1.156 s ±  0.009 s    [User: 1.038 s, System: 0.248 s]
-  Range (min … max):    1.145 s …  1.165 s    10 runs
+  Time (mean ± σ):      1.163 s ±  0.008 s    [User: 1.057 s, System: 0.256 s]
+  Range (min … max):    1.147 s …  1.179 s    10 runs
 
 Benchmark 2: ./target/release/mmdc -i tests/bench.mmd -o test.png
-  Time (mean ± σ):      3.364 s ±  0.042 s    [User: 0.270 s, System: 0.136 s]
-  Range (min … max):    3.308 s …  3.432 s    10 runs
+  Time (mean ± σ):      3.474 s ±  0.032 s    [User: 0.507 s, System: 0.168 s]
+  Range (min … max):    3.420 s …  3.505 s    10 runs
 
 Summary
   ./node_modules/.bin/mmdc -i tests/bench.mmd -o test.png ran
-    2.91 ± 0.04 times faster than ./target/release/mmdc -i tests/bench.mmd -o test.png```
+    2.99 ± 0.03 times faster than ./target/release/mmdc -i tests/bench.mmd -o test.png
 ```
 
 ## Licenses
