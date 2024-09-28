@@ -67,6 +67,6 @@ Summary
 
 The binary embeds following asset during build. See the respective LICENSE for details.
 
-- [Mermaid v10.6.1](https://github.com/mermaid-js/mermaid/tree/v10.6.1): [LICENSE](https://github.com/mermaid-js/mermaid/blob/v10.6.1/LICENSE)
+- [Mermaid v11.2.1](https://github.com/mermaid-js/mermaid/tree/mermaid%4011.2.1): [LICENSE](https://github.com/mermaid-js/mermaid/blob/mermaid%4011.2.1/LICENSE)
 
 Others are released under the MIT License. See [LICENSE](LICENSE) for details.
