@@ -49,6 +49,7 @@ using [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli). You c
 - Apple M1 Max
 
 ```
+$ cargo build --release
 $ hyperfine --warmup 5 './node_modules/.bin/mmdc -i tests/bench.mmd -o test.png' './target/release/mmdc -i tests/bench.mmd -o test.png'
 Benchmark 1: ./node_modules/.bin/mmdc -i tests/bench.mmd -o test.png
   Time (mean ± σ):      1.156 s ±  0.009 s    [User: 1.038 s, System: 0.248 s]
