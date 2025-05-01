@@ -111,7 +111,7 @@ impl Exporter<Uninitialized> {
         let app = Router::new()
             .route("/", get(|| async { response!(TEXT_HTML, HTML) }))
             .route(
-                "/:path",
+                "/{path}",
                 get(|Path(path): Path<String>, State(state): State<SharedState>| async move {
                     match state.read() {
                         Ok(store) => match path.as_ref() {
@@ -305,7 +305,7 @@ mod test {
         let exporter = exporter.launch().await.unwrap();
         exporter.export_mermaid_to_image(&output, 1960, 2160).await.unwrap();
 
-        let calculated_hash = &output.sha256().unwrap();
+        let calculated_hash = &output.sha256().await.unwrap();
         assert_eq!(calculated_hash, hash);
 
         remove_file(&output).await.unwrap(); // remove only if the assertion passes

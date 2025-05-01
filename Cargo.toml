@@ -12,19 +12,19 @@ name = "mmdc"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0.89"
-axum = "0.7.7"
+anyhow = "1.0.98"
+axum = "0.8.4"
 camino = { version = "1.1.9", features = ["serde"] }
-clap = { version = "4.5.18", features = ["derive", "wrap_help"] }
-headless_chrome = { version = "1.0.15", features = ["fetch"] }
+clap = { version = "4.5.37", features = ["derive", "wrap_help"] }
+headless_chrome = { version = "1.0.17", features = ["fetch"] }
 mime = "0.3.17"
-tokio = { version = "1.40.0", features = ["full"] }
+tokio = { version = "1.44.2", features = ["full"] }
 
 [build-dependencies]
-reqwest = { version = "0.12.7", features = ["blocking"] }
+reqwest = { version = "0.12.15", features = ["blocking"] }
 
 [dev-dependencies]
-sha2_hasher = { git = "https://github.com/0x6b/sha2_hasher", tag = "v0.1.0" }
+sha2_hasher = { git = "https://github.com/0x6b/sha2_hasher", tag = "v0.2.0" }
 
 [profile.release]
 codegen-units = 1
