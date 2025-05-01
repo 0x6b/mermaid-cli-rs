@@ -251,7 +251,7 @@ impl Exporter<Launched> {
                     .ok_or(anyhow!("failed to extract SVG"))?
                     .to_string()
                     .replace(r#"\""#, r#"""#); // `this.innerHTML` returns double quoted string
-                str[1..(str.len() - 1)].as_bytes().to_vec() // omit first and last "
+                str.as_bytes()[1..(str.len() - 1)].to_vec() // omit first and last "
             }
             ImageFormat::Png => tab
                 .wait_for_element("div#mermaid > svg#svg")?

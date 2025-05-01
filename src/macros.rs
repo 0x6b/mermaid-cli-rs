@@ -23,7 +23,6 @@
 ///     (store.style).clone(),
 /// ).into_response()
 /// ```
-
 macro_rules! response {
     ($a:expr, $b:expr) => {
         // Create a tuple containing the content type header and the body of the response.
