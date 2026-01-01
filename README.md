@@ -64,6 +64,8 @@ Summary
     3.61 ± 0.07 times faster than ./target/release/mmdc -i tests/bench.mmd -o test.png
 ```
 
+The performance gap is due to browser startup overhead in the [headless_chrome](https://crates.io/crates/headless_chrome) crate. Various Chrome launch options were tested (disabling sandbox, GPU, extensions, background networking, etc.) with no meaningful improvement—the ~3s overhead is inherent to the library's architecture. The tradeoff is: slower execution, but a single self-contained binary with no Node.js/npm dependency.
+
 ## Licenses
 
 The binary embeds following asset during build. See the respective LICENSE for details.
