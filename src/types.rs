@@ -1,7 +1,9 @@
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
+use bytes::Bytes;
 use camino::Utf8PathBuf;
 use clap::Parser;
+use tokio::sync::RwLock;
 
 #[derive(Parser, Debug)]
 #[clap(about, version)]
@@ -36,16 +38,16 @@ pub(crate) struct Args {
 #[derive(Default)]
 pub(crate) struct Store {
     /// The CSS styles used by the HTML page.
-    pub(crate) style: Vec<u8>,
+    pub(crate) style: Bytes,
 
     /// The Mermaid configuration data.
-    pub(crate) config: Vec<u8>,
+    pub(crate) config: Bytes,
 
     /// The input Mermaid diagram.
-    pub(crate) diagram: Vec<u8>,
+    pub(crate) diagram: Bytes,
 
     /// The Mermaid.js code used by the HTML page.
-    pub(crate) mermaid_js: Vec<u8>,
+    pub(crate) mermaid_js: Bytes,
 }
 
 /// A type alias for a shared state.

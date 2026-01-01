@@ -1262,6 +1262,7 @@ version = "0.5.3"
 dependencies = [
  "anyhow",
  "axum",
+ "bytes",
  "camino",
  "clap",
  "headless_chrome",

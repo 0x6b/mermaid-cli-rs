@@ -17,6 +17,7 @@ axum = "0.8"
 camino = { version = "1.2", features = ["serde1"] }
 clap = { version = "4", features = ["derive", "wrap_help"] }
 headless_chrome = { version = "1", features = ["fetch"] }
+bytes = "1"
 mime = "0.3"
 tokio = { version = "1", features = ["rt-multi-thread", "net", "fs", "io-std", "macros"] }
 

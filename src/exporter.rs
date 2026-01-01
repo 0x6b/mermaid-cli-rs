@@ -2,8 +2,10 @@ use std::{
     io::{stdin, Read},
     net::SocketAddr,
     ops::Deref,
-    sync::{Arc, RwLock},
+    sync::Arc,
 };
+
+use bytes::Bytes;
 
 use anyhow::{anyhow, Result};
 use axum::{
@@ -22,6 +24,7 @@ use tokio::{
     fs::{read, read_to_string, write},
     net::TcpListener,
     spawn,
+    sync::RwLock,
 };
 
 use crate::{
@@ -90,21 +93,19 @@ impl Exporter<Uninitialized> {
     ) -> Result<Exporter<Initialized>> {
         // A shared storage for resources used to serve.
         let shared_store = Arc::new(RwLock::new(Store {
-            style: Self::from_file_or_default(&style, STYLE).await.to_vec(),
-            config: Self::from_file_or_default(&config, CONFIG).await.to_vec(),
-            diagram: {
-                if diagram == "-" {
-                    let mut input = String::new();
-                    let mut handle = stdin().lock();
-                    handle.read_to_string(&mut input)?;
-                    input.into_bytes()
-                } else {
-                    read(&diagram)
-                        .await
-                        .unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
-                }
-            },
-            mermaid_js: MERMAID_JS.to_vec(),
+            style: Self::from_file_or_default(&style, STYLE).await,
+            config: Self::from_file_or_default(&config, CONFIG).await,
+            diagram: Bytes::from(if diagram == "-" {
+                let mut input = String::new();
+                let mut handle = stdin().lock();
+                handle.read_to_string(&mut input)?;
+                input.into_bytes()
+            } else {
+                read(&diagram)
+                    .await
+                    .unwrap_or_else(|_| panic!("Failed to read input file {}", diagram))
+            }),
+            mermaid_js: Bytes::from_static(MERMAID_JS),
         }));
 
         // Create a server to handle HTTP requests.
@@ -113,15 +114,13 @@ impl Exporter<Uninitialized> {
             .route(
                 "/{path}",
                 get(|Path(path): Path<String>, State(state): State<SharedState>| async move {
-                    match state.read() {
-                        Ok(store) => match path.as_ref() {
-                            "style" => response!(TEXT_CSS_UTF_8, store.style),
-                            "config" => response!(APPLICATION_JSON, store.config),
-                            "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
-                            "mermaid_js" => response!(TEXT_JAVASCRIPT, store.mermaid_js),
-                            _ => StatusCode::NOT_FOUND.into_response(),
-                        },
-                        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                    let store = state.read().await;
+                    match path.as_ref() {
+                        "style" => response!(TEXT_CSS_UTF_8, store.style),
+                        "config" => response!(APPLICATION_JSON, store.config),
+                        "diagram" => response!(TEXT_PLAIN_UTF_8, store.diagram),
+                        "mermaid_js" => response!(TEXT_JAVASCRIPT, store.mermaid_js),
+                        _ => StatusCode::NOT_FOUND.into_response(),
                     }
                 }),
             )
@@ -143,19 +142,14 @@ impl Exporter<Uninitialized> {
     ///
     /// # Returns
     ///
-    /// A vector of bytes representing the contents of the file at the given path, or the default
+    /// `Bytes` representing the contents of the file at the given path, or the default
     /// value if the path is `None` or the file cannot be read.
-    async fn from_file_or_default<'a>(
-        path: &'a Option<Utf8PathBuf>,
-        default: &'a [u8],
-    ) -> &'a [u8] {
+    async fn from_file_or_default(path: &Option<Utf8PathBuf>, default: &'static [u8]) -> Bytes {
         match path {
             Some(pathlike) if pathlike.exists() => {
-                let content = read_to_string(&pathlike).await.unwrap_or_default();
-                // Leak the content to make it have a static lifetime.
-                Box::leak(content.into_boxed_str()).as_bytes()
+                Bytes::from(read_to_string(&pathlike).await.unwrap_or_default())
             }
-            _ => default,
+            _ => Bytes::from_static(default),
         }
     }
 }
