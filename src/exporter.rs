@@ -292,7 +292,9 @@ mod test {
     run_test!(req_diagram, "714bad4b143f3c57327beffa71b0d8e86eb53fdc5af5f9e6d41bea73e3340b3b");
     run_test!(sankey, "bdf79044e7de49ebaa7f611a91a9147504e73abe2bce8f9c2071fc2a2f02e401");
     run_test!(sequence_diagram, "880497e8a7e6e6b99cbad8558e76245606b0730dd197f3299169e9478112df44");
-    // state_diagram test is skipped due to non-deterministic rendering with concurrent states
+    // state_diagram test is skipped: the diagram contains concurrent orthogonal states which
+    // mermaid.js renders with non-deterministic element ordering, causing the output PNG hash to
+    // differ on each run. See tests/fixtures/state_diagram.mmd for the diagram definition.
     run_test!(timeline, "36d335d25bee9c294dd02e63d34f4c86e7da79f1f3233d5d3385604f4ac8082f");
     run_test!(user_journey, "35ad9065fee67e10720471a02f239850f4f87906f4e56de8a82fbcb19486649a");
     run_test!(xy_chart, "025db9f1f2417bcacb66efef19bcf0c1ce2f960e573cb609c8c9efb37bd4fe62");
