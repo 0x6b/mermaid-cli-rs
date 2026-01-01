@@ -42,32 +42,32 @@ Options:
 If you require better performance or more advanced capabilities, we recommend
 using [mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli). You can review a rough, not scientific, benchmark I conducted with the diagram example available at [mermaid-js/mermaid/demos/flowchart.html](https://github.com/mermaid-js/mermaid/blob/4e4f2fcfc5367f22edea685b8f48ad2d7525d1c0/demos/flowchart.html).
 
-- Node.js v20.17.0
-- @mermaid-js/mermaid-cli: 11.2.0
-- Rust 1.81.0 (eeb90cda1 2024-09-04)
-- macOS 15.0 (Sequoia)
-- Apple M1 Max
+- Node.js v25.2.1
+- @mermaid-js/mermaid-cli: 11.12.0
+- Rust 1.92.0 (ded5c06cf 2025-12-08)
+- macOS 26.1 (Tahoe)
+- Apple M4 Pro
 
 ```
 $ cargo build --release
 $ hyperfine --warmup 5 './node_modules/.bin/mmdc -i tests/bench.mmd -o test.png' './target/release/mmdc -i tests/bench.mmd -o test.png'
 Benchmark 1: ./node_modules/.bin/mmdc -i tests/bench.mmd -o test.png
-  Time (mean ± σ):      1.163 s ±  0.008 s    [User: 1.057 s, System: 0.256 s]
-  Range (min … max):    1.147 s …  1.179 s    10 runs
+  Time (mean ± σ):     900.5 ms ±  17.3 ms    [User: 818.6 ms, System: 213.6 ms]
+  Range (min … max):   878.8 ms … 930.4 ms    10 runs
 
 Benchmark 2: ./target/release/mmdc -i tests/bench.mmd -o test.png
-  Time (mean ± σ):      3.474 s ±  0.032 s    [User: 0.507 s, System: 0.168 s]
-  Range (min … max):    3.420 s …  3.505 s    10 runs
+  Time (mean ± σ):      3.254 s ±  0.015 s    [User: 0.174 s, System: 0.097 s]
+  Range (min … max):    3.228 s …  3.274 s    10 runs
 
 Summary
   ./node_modules/.bin/mmdc -i tests/bench.mmd -o test.png ran
-    2.99 ± 0.03 times faster than ./target/release/mmdc -i tests/bench.mmd -o test.png
+    3.61 ± 0.07 times faster than ./target/release/mmdc -i tests/bench.mmd -o test.png
 ```
 
 ## Licenses
 
 The binary embeds following asset during build. See the respective LICENSE for details.
 
-- [Mermaid v11.2.1](https://github.com/mermaid-js/mermaid/tree/mermaid%4011.2.1): [LICENSE](https://github.com/mermaid-js/mermaid/blob/mermaid%4011.2.1/LICENSE)
+- [Mermaid v11.12.2](https://github.com/mermaid-js/mermaid/tree/mermaid%4011.12.2): [LICENSE](https://github.com/mermaid-js/mermaid/blob/mermaid%4011.12.2/LICENSE)
 
 Others are released under the MIT License. See [LICENSE](LICENSE) for details.
