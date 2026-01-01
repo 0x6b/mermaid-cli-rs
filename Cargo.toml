@@ -18,7 +18,7 @@ camino = { version = "1.2", features = ["serde1"] }
 clap = { version = "4", features = ["derive", "wrap_help"] }
 headless_chrome = { version = "1", features = ["fetch"] }
 mime = "0.3"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "fs", "io-std", "macros"] }
 
 [build-dependencies]
 reqwest = { version = "0.13", features = ["blocking"] }
