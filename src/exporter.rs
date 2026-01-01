@@ -36,7 +36,7 @@ const STYLE: &[u8] = include_bytes!("../assets/style.css");
 /// Default configuration for Mermaid.js
 const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 /// Mermaid.js bundle
-const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@11.2.1.min.mjs");
+const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@11.12.2.min.mjs");
 
 pub struct Exporter<S>
 where
