@@ -70,6 +70,6 @@ The performance gap is due to browser startup overhead in the [headless_chrome](
 
 The binary embeds following asset during build. See the respective LICENSE for details.
 
-- [Mermaid v11.12.2](https://github.com/mermaid-js/mermaid/tree/mermaid%4011.12.2): [LICENSE](https://github.com/mermaid-js/mermaid/blob/mermaid%4011.12.2/LICENSE)
+- [Mermaid v11.13.0](https://github.com/mermaid-js/mermaid/tree/mermaid%4011.13.0): [LICENSE](https://github.com/mermaid-js/mermaid/blob/mermaid%4011.13.0/LICENSE)
 
 Others are released under the MIT License. See [LICENSE](LICENSE) for details.

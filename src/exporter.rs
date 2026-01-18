@@ -39,7 +39,7 @@ const STYLE: &[u8] = include_bytes!("../assets/style.css");
 /// Default configuration for Mermaid.js
 const CONFIG: &[u8] = include_bytes!("../assets/config.json");
 /// Mermaid.js bundle
-const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@11.12.2.min.mjs");
+const MERMAID_JS: &[u8] = include_bytes!("../assets/mermaid@11.13.0.min.mjs");
 
 pub struct Exporter<S>
 where
@@ -272,18 +272,18 @@ mod test {
     }
 
     run_test!(architecture, "649beb4a4596f0c6d0701c28b76df70f486c3ab976e58f1c6ac78990bb4f6441");
-    run_test!(block_diagram, "6c181056b1f10142750111a8cae126b591af60a593e9c5f5e7e877214ba21205");
+    run_test!(block_diagram, "4d5fac4a57ac388d4fb97894aa0ba2f2f14451f21bc2ccc6d5bdd63a6f566317");
     run_test!(c4_diagram, "f5da275365ff2603c31b50099ee8009bfd8d093d66713b862f6583211787a264");
-    run_test!(class_diagram, "bdc11f7ad6b8a57e239911dc5a955eded73823fdbbd6ebe938eb05acdda9d86a");
+    run_test!(class_diagram, "1835779f3e03f931d8568acbdd51d14bab0e64facc7a927816d7b84ba587b415");
     run_test!(er_diagram, "32eb7393ce9a8cf8a47d6b86f930aaa3000813c039f2d61542473bd69825e2a7");
-    run_test!(flowchart, "32a56fd70343f1f3a2a697b34afd478a986b4d149904b8c2480e080a09c3680c"); // not looking good, though
+    run_test!(flowchart, "d8c6d227756c5c846b3a0b3d3aede63aaa907a494b34952dad6274b3f99a7fa5"); // not looking good, though
     run_test!(gantt, "a58369afc4d07420233b72dd307ab98a6b4c4d091ef57cdaead2faa4dc3ce42d");
     run_test!(git_graph, "7c7430d4db513b057424d2662c92f8ffe82b23ac4d0c4dd9b422a2e07988d5d5");
     run_test!(mindmaps, "6ff21e5a406970087fcd3e7910b38174c6a56e83944c9eef23e393fe2d02de1c");
     run_test!(packet, "1606b7e009594b9c7edbb29f0f404b1434e75f0e04bddb19f7e645664796db9a");
     run_test!(pie_chart, "a22ee20be9d526e984d95b668977ab5d7a77b2558ce3ca9cf20e906c848de958");
     run_test!(quadrant_chart, "559d16a223a3f4ef1d1f23a60c1b45188656606a4b595e9f07380c39f1ff5157");
-    run_test!(req_diagram, "714bad4b143f3c57327beffa71b0d8e86eb53fdc5af5f9e6d41bea73e3340b3b");
+    run_test!(req_diagram, "b06a8c11e7985f6106da94e5dd32523a5056a060f62764891c5f5e8e563bfa2c");
     run_test!(sankey, "bdf79044e7de49ebaa7f611a91a9147504e73abe2bce8f9c2071fc2a2f02e401");
     run_test!(sequence_diagram, "880497e8a7e6e6b99cbad8558e76245606b0730dd197f3299169e9478112df44");
     // state_diagram test is skipped: the diagram contains concurrent orthogonal states which
