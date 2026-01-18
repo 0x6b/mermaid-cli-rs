@@ -25,7 +25,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "net", "fs", "io-std", "
 reqwest = { version = "0.13", features = ["blocking"] }
 
 [dev-dependencies]
-sha2_hasher = { git = "https://github.com/0x6b/sha2_hasher", tag = "v0.2.0" }
+sha2_hasher = { version = "0.3", features = ["async"] }
 
 [profile.release]
 codegen-units = 1
