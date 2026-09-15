@@ -9,7 +9,7 @@ Tested on Apple Silicon but might be cross-platform.
 Run the following command:
 
 ```shell
-$ cargo install https://github.com/0x6b/mermaid-cli-rs
+$ cargo install --git https://github.com/0x6b/mermaid-cli-rs
 ```
 
 ## Usage
